@@ -1,0 +1,14 @@
+prefix=/home/jburnett/scanner
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+ldflags= 
+libs= -ldl  -lm         -lusb  
+
+Name: SANE Backends
+Description: Backends for SANE, the universal scanner interface
+Version: 1.0.27git
+Requires:
+Libs: -L${libdir} -lsane
+Libs.private: ${ldflags} ${libs}
+Cflags: -I${includedir}
