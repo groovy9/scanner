@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -x
 
 bindir=`readlink -f $0 |xargs -n 1 dirname`
 
@@ -11,6 +11,18 @@ b=-1
 gray=0
 scanimage="$bindir/scanimage"
 pdfpar="$bindir/pdfpar.sh"
+
+type=`cat ~/.scannertype`
+if [ -z "$type" ]; then
+  # Jason's scanner is a model Fi-7160
+  type=fi7160
+
+  # everyone else has a Scanscap iX500
+  if $scanimage -L |grep -i scansnap >/dev/null; then
+    type=scansnap
+  fi
+  echo $type > ~/.scannertype
+fi
 
 while getopts "fdb:n:g" opt; do
   case $opt in
@@ -49,7 +61,11 @@ if [ $duplex -eq 1 ]; then
 fi
 
 if [ $gray -eq 0 ]; then
-  mode=Halftone
+  if [ $type = "scansnap" ]; then
+    mode=Lineart
+  else
+    mode=Halftone
+  fi
   # start the pnm -> pdf mashing process, which will keep running until we're
   # done scanning pages.  It loops looking for pnms until it sees the 'end'
   # file, which we create after scanning is done.

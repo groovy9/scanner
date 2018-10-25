@@ -336,7 +336,7 @@ else
 
     test $g = "g" && gray="-g"
 
-    if [ $gray = "-g" -a -f /etc/ImageMagick*/policy.xml ]; then
+    if [ "$gray" = "-g" -a -f /etc/ImageMagick*/policy.xml ]; then
       echo "WARNING: Grayscale scans may not work while /etc/ImageMagick*/policy.xml exists"
     fi
 
