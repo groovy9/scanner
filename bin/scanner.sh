@@ -277,9 +277,9 @@ if [ $action != "existing" ]; then
   while ! echo "$quick" |grep '^[yn]$' >/dev/null; do
     echo
     if [ $action = "upload" ]; then
-      echo -n "Quick Scan (one sided, no overwrite, no flatbed, darkness 5)? [default: y] "
+      echo -n "Quick Scan (one sided, no overwrite, darkness 4)? [default: y] "
     else
-      echo -n "Quick Scan (one sided, no flatbed, darkness 3)? [default: y] "
+      echo -n "Quick Scan (one sided, darkness 4)? [default: y] "
     fi
     read quick
     test -z "$quick" && quick=y
@@ -290,7 +290,7 @@ if [ "$quick" = 'y' ]; then
   flatbed=
   duplex=
   gray=
-  bright=3
+  bright=4
   overwrite=No
 else
   if [ $action = "upload" -o $action = "existing" ]; then
@@ -343,7 +343,7 @@ else
     echo
     bright=9
     while [ $bright -lt 0 -o $bright -gt 8 ]; do
-      echo -n "Scan darkness from 0 (darkest) to 8 (lightest) [default: 4] ? "
+      echo -n "Scan darkness from 0 (darkest) to 8 (lightest) [default: 5] ? "
       read bright
       test -z "$bright" && bright=4
     done
