@@ -76,7 +76,7 @@ fi
 
 # scan what's on the ADF
 $scanimage -d fujitsu --mode $mode --resolution $res --source "$source" \
-          --batch=out%03d.pnm --brightness $brightness --bgcolor=White \
+          --batch=out%03d.pnm --brightness $brightness \
           --contrast $contrast >/dev/null 2>&1
 
 if [ $? -ne 0 ]; then

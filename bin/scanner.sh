@@ -4,14 +4,13 @@ export PATH=/home/jburnett/bin:$PATH
 
 bindir=`readlink -f $0 |xargs -n 1 dirname`
 homedir=`readlink -f ~`
+user=`whoami`
 
 sigint() {
   exec $0
 }
 
 trap 'sigint' INT
-trap 'sigint' QUIT
-trap 'sigint' HUP
 
 doscan="$bindir/scan.sh"
 upload="$bindir/upl.sh"
@@ -24,29 +23,23 @@ scandir=~/Scans
 
 mkdir -p $scandir 2>/dev/null
 
-for f in curl pdftk play; do
+for f in curl pdftk convert play evince; do
   if [ ! -x "`which $f`" ]; then
-    echo "You need to install $f.  Exiting."
+    echo "You need to install $f.  Exiting in 10 seconds."
+    sleep 10
     exit 1
   fi
 done
 
 loggedin=1
 
-userfile=~/.scanner.username
-touch "$userfile"
-
 login() {
   echo
   echo 'Your login has expired.'
   while [ $loggedin -ne 1 ]; do
     echo
-    lastuser=$(cat $userfile)
-    read -p "Username: [$lastuser] " user
-    if [ -z "$user" ]; then
-      user="$lastuser"
-    fi
-    read -s -p "Password: " pass
+    echo "Your username is $user"
+    read -s -p "Enter your password: " pass
     echo
 
     curl -k -c ~/.cookies --data "{\"user\":\"$user\",\"pass\":\"$pass\"}" \
@@ -55,7 +48,6 @@ login() {
     if [ $? -eq 0 ]; then
       echo "Bad username/password"
     else
-      echo "$user" > $userfile
       loggedin=1
       echo
     fi
@@ -69,7 +61,6 @@ if $last |grep auth.html >/dev/null 2>&1; then
   login
 fi
 
-user=`whoami`
 
 while true; do
 clear
@@ -81,9 +72,17 @@ echo "Press enter to accept default answers to questions."
 action=
 while ! echo $action |grep '^[ufse]$' >/dev/null; do
   echo
-  echo -n "(U)pload scan or (E)xisting, (F)ax, or (S)ave?  [default: u] "
+  if [ $user = "jburnett" ]; then
+    echo -n "(U)pload scan or (E)xisting, (F)ax, or (S)ave?  [default: u] "
+  else
+    echo -n "(U)pload scan or (E)xisting, (F)ax, or (S)ave?  [default: s] "
+  fi
   read action
-  test -z "$action" && action=u
+  if [ $user = "jburnett" ]; then
+    test -z "$action" && action=u
+  else
+    test -z "$action" && action=s
+  fi
   action=`echo $action |tr '[A-Z]' '[a-z]'`
 done
 echo $action |grep ^u >/dev/null && action=upload
@@ -407,6 +406,12 @@ if [ $action = "upload" -o $action = "existing" ]; then
 
 fi
 
+if [ $user = "jburnett" ]; then
+  viewer=pdf
+else
+  viewer=evince
+fi
+
 if [ $action = "fax" ]; then
   #fax it
   mail -a $file -t < /tmp/fax.$$ && echo "Fax successfully sent."
@@ -414,8 +419,7 @@ fi
 fname=`basename $file`
 echo
 echo "Your scan is saved as $fname in your scans folder."
-#nohup acroread $file >/dev/null 2>&1 &
-pdf $file
+$viewer $file
 
 echo
 echo "Press enter to scan another."
