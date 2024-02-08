@@ -1,6 +1,6 @@
 #!/bin/bash
 
-export PATH=/home/jburnett/bin:$PATH
+export PATH=~/bin:$PATH
 
 bindir=`readlink -f $0 |xargs -n 1 dirname`
 homedir=`readlink -f ~`
@@ -21,15 +21,19 @@ faxhist=~/.faxes
 uploadhist=/tmp/uploadhist
 scandir=~/Scans
 
+
 mkdir -p $scandir 2>/dev/null
 
-for f in curl pdftk convert play evince; do
+for f in curl pdftk convert play evince parallel; do
   if [ ! -x "`which $f`" ]; then
-    echo "You need to install $f.  Exiting in 10 seconds."
-    sleep 10
+    echo "You need to install $f."
     exit 1
   fi
 done
+
+if [ ! -f /etc/udev/60-libsane.rules ]; then
+  echo "Make sure to install 60-libsane.rules to /etc/udev and add `whoami` to the scanner group"
+fi
 
 loggedin=1
 
@@ -64,6 +68,7 @@ fi
 
 while true; do
 clear
+duplex=
 echo
 echo "Place document on scanner face down."
 echo "Press control-c at any time to start over."
@@ -159,6 +164,7 @@ if [ $action = "upload" -o $action = "existing" ]; then
     echo $tp |grep ^l >/dev/null
     if [ $? -eq 0 ]; then
       description=log
+      duplex="-d"
     fi
     echo $tp |grep ^c >/dev/null
     if [ $? -eq 0 ]; then
@@ -264,7 +270,8 @@ if [ $action = "fax" ]; then
     to="$attention $company"
   fi
   echo "From: Absolute Rush Delivery <$user@absoluterush.net>" > /tmp/fax.$$
-  echo "To: $to <$faxnum@maxemailsend.com>" >> /tmp/fax.$$
+  # echo "To: $to <$faxnum@maxemailsend.com>" >> /tmp/fax.$$
+  echo "To: $to <$faxnum@efaxsend.com>" >> /tmp/fax.$$
   echo "Subject: {fine}" >> /tmp/fax.$$
   echo " " >> /tmp/fax.$$
   echo "Sent by $from (615-252-3774)" >> /tmp/fax.$$
@@ -276,9 +283,9 @@ if [ $action != "existing" ]; then
   while ! echo "$quick" |grep '^[yn]$' >/dev/null; do
     echo
     if [ $action = "upload" ]; then
-      echo -n "Quick Scan (one sided, no overwrite, darkness 4)? [default: y] "
+      echo -n "Quick Scan (one sided, no overwrite, darkness 3)? [default: y] "
     else
-      echo -n "Quick Scan (one sided, darkness 4)? [default: y] "
+      echo -n "Quick Scan (one sided, darkness 3)? [default: y] "
     fi
     read quick
     test -z "$quick" && quick=y
@@ -287,9 +294,8 @@ fi
 
 if [ "$quick" = 'y' ]; then
   flatbed=
-  duplex=
   gray=
-  bright=4
+  bright=3
   overwrite=No
 else
   if [ $action = "upload" -o $action = "existing" ]; then
@@ -311,10 +317,10 @@ else
   fname=
   if [ $action = "existing" ]; then
     while [ -z "$fname" -o ! -f "$fname" ]; do
-      echo -n "What file would you like to upload? [$homedir/Downloads/upl.pdf]"
+      echo -n "What file would you like to upload? [/tmp/_current.pdf]"
       read fname
       if [ -z "$fname" ]; then
-        fname="$homedir/Downloads/upl.pdf"
+        fname="/tmp/_current.pdf"
       fi
       if [ ! -z "$fname" -a ! -f "$fname" ]; then
         echo "File does not exist!"
@@ -342,9 +348,9 @@ else
     echo
     bright=9
     while [ $bright -lt 0 -o $bright -gt 8 ]; do
-      echo -n "Scan darkness from 0 (darkest) to 8 (lightest) [default: 5] ? "
+      echo -n "Scan darkness from 0 (darkest) to 8 (lightest) [default: 3] ? "
       read bright
-      test -z "$bright" && bright=4
+      test -z "$bright" && bright=3
     done
 
     echo
@@ -366,7 +372,7 @@ while [ ! -f "$file" ]; do
   file=`$doscan $flatbed -b $bright $duplex $gray -n $scandir 2>/dev/null`
 
   if [ ! -f "$file" ]; then
-    play -q $sound &
+    play -q $sound >/dev/null 2>/dev/null  &
     echo
     echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     echo "Scan failed"
@@ -390,7 +396,7 @@ if [ $action = "upload" -o $action = "existing" ]; then
     test ! -d $uploadhist && mkdir /tmp/uploadhist
     touch $uploadhist/$type.$id
   else
-    play -q $sound &
+    play -q $sound >/dev/null 2>/dev/null  &
     echo
     echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     if echo "$msg" |grep -i "file exists" >/dev/null 2>&1; then

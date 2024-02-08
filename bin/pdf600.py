@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/bin/python
 # Copyright 2006 Google Inc.
 # Author: agl@imperialviolet.org (Adam Langley)
 #
@@ -28,7 +28,7 @@ import os
 # Run ./jbig2 -s -p <other options> image1.jpeg image1.jpeg ...
 # python pdf.py output > out.pdf
 
-dpi = 300
+dpi = 600
 
 class Ref:
   def __init__(self, x):
