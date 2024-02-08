@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/sh 
 
 
 bindir=`readlink -f $0 |xargs -n 1 dirname`
@@ -18,6 +18,8 @@ tmp="$dir/scan$$"
 cleanup() {
   rm -rf $tmp
 }
+
+$bindir/wsl_attach_scanner.sh
 
 type=`cat ~/.scannertype`
 if [ -z "$type" ]; then

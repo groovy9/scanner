@@ -40,8 +40,15 @@ if [ $? -eq 0 ]; then
   winuser=`cmd.exe /C whoami 2>/dev/null | tr -d $'\r' | cut -f2 -d\\`
 fi
 
-if [ ! -f /etc/udev/rules.d/40-libsane.rules ]; then
-  echo "Make sure to install 40-libsane.rules to /etc/udev/rules.d and add `whoami` to the scanner group"
+groups |grep scanner >/dev/null
+if [ $? -ne 0 ]; then
+  echo "Setup error: Add user `whoami` to the scanner group via the command vigr"
+  exit 1
+fi
+
+if [ ! -f /etc/udev/rules.d/60-libsane.rules ]; then
+  echo "Setup error: install 60-libsane.rules to /etc/udev/rules.d and reboot"
+  exit 1
 fi
 
 loggedin=1
