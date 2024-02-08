@@ -2,7 +2,7 @@
 
 sudo apt -y update
 sudo apt -y upgrade
-sudo apt -y install pdftk imagemagick python2 parallel sox libleptonica-dev evince sane-tools
+sudo apt -y install pdftk imagemagick python2 parallel sox libleptonica-dev evince sane-utils
 
 cd
 mkdir bin 2>/dev/null
