@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash 
 
 export PATH=~/bin:$PATH
 
@@ -24,15 +24,24 @@ scandir=~/Scans
 
 mkdir -p $scandir 2>/dev/null
 
-for f in curl pdftk convert play evince parallel; do
+for f in curl pdftk convert play evince parallel python2; do
   if [ ! -x "`which $f`" ]; then
     echo "You need to install $f."
     exit 1
   fi
 done
 
-if [ ! -f /etc/udev/60-libsane.rules ]; then
-  echo "Make sure to install 60-libsane.rules to /etc/udev and add `whoami` to the scanner group"
+# if running in WSL on windows, launch Acrobat Reader
+uname -a |grep WSL >/dev/null
+iswindows=0
+winuser=""
+if [ $? -eq 0 ]; then
+  iswindows=1
+  winuser=`cmd.exe /C whoami 2>/dev/null | tr -d $'\r' | cut -f2 -d\\`
+fi
+
+if [ ! -f /etc/udev/rules.d/40-libsane.rules ]; then
+  echo "Make sure to install 40-libsane.rules to /etc/udev/rules.d and add `whoami` to the scanner group"
 fi
 
 loggedin=1
@@ -316,11 +325,15 @@ else
 
   fname=
   if [ $action = "existing" ]; then
+    latestpdf="/tmp/_current.pdf"
+    if [ $iswindows -eq 1 ]; then
+      latestpdf=`ls -Art /mnt/c/Users/${winuser}/Downloads/*.pdf |tail -1`
+    fi
     while [ -z "$fname" -o ! -f "$fname" ]; do
-      echo -n "What file would you like to upload? [/tmp/_current.pdf]"
+      echo -n "What file would you like to upload? [$latestpdf]"
       read fname
       if [ -z "$fname" ]; then
-        fname="/tmp/_current.pdf"
+        fname=$latestpdf
       fi
       if [ ! -z "$fname" -a ! -f "$fname" ]; then
         echo "File does not exist!"
@@ -379,8 +392,9 @@ while [ ! -f "$file" ]; do
     echo "  Replace on scanner and press enter to try again."
     echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
     read foo
-  else
-    cp -f "$file" $homedir/Downloads/upl.pdf
+#  else
+
+    #cp -f "$file" $homedir/Downloads/upl.pdf
   fi
 done
 
@@ -418,14 +432,31 @@ else
   viewer=evince
 fi
 
+if [ $iswindows -eq 1 ]; then
+  viewer="/mnt/c/Program Files (x86)/Adobe/Acrobat Reader DC/Reader/AcroRd32.exe"
+fi
+
 if [ $action = "fax" ]; then
   #fax it
   mail -a $file -t < /tmp/fax.$$ && echo "Fax successfully sent."
 fi
 fname=`basename $file`
 echo
-echo "Your scan is saved as $fname in your scans folder."
-$viewer $file
+
+if [ $action != "existing" ]; then
+cd /tmp
+if [ $iswindows -eq 1 ]; then
+  echo "Your scan is saved as $fname in your Downloads folder."
+  # get our windows username
+  winuser=`cmd.exe /C whoami 2>/dev/null | tr -d $'\r' | cut -f2 -d\\`
+  # copy this file to our Windows downloads directory
+  cp -f "$fname" /mnt/c/Users/$winuser/Downloads/
+else
+  echo "Your scan is saved as $fname in your scans folder."
+fi
+
+nohup "$viewer" "$fname" 2>/dev/null &
+fi
 
 echo
 echo "Press enter to scan another."
