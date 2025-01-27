@@ -151,9 +151,9 @@ if [ $action = "upload" -o $action = "existing" ]; then
       echo
       if [ -f "$uploadhist/pod.$id" -a ! -f "$uploadhist/log.$id" ]; then
         tpdef=l
-        echo -n "Is this a (P)OD, (L)og or (C)ontract? [default: p] "
+        echo -n "Is this a (P)OD or run (L)og? [default: p] "
       else
-        echo -n "Is this a (P)OD, (L)og or (C)ontract? [default: p] "
+        echo -n "Is this a (P)OD or run (L)og? [default: p] "
       fi
       read tp
       test -z "$tp" && tp=$tpdef
@@ -168,10 +168,10 @@ if [ $action = "upload" -o $action = "existing" ]; then
       description=log
       duplex="-d"
     fi
-    echo $tp |grep ^c >/dev/null
-    if [ $? -eq 0 ]; then
-      description=contract
-    fi
+#    echo $tp |grep ^c >/dev/null
+#    if [ $? -eq 0 ]; then
+#      description=contract
+#    fi
   fi
 
 
