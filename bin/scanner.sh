@@ -17,10 +17,8 @@ upload="$bindir/upl.sh"
 last="$bindir/last.sh"
 sound="$bindir/error.wav"
 
-faxhist=~/.faxes
 uploadhist=/tmp/uploadhist
 scandir=~/Scans
-
 
 mkdir -p $scandir 2>/dev/null
 
@@ -33,13 +31,11 @@ done
 
 # if running in WSL on windows, launch Acrobat Reader
 iswindows=0
-winuser=""
 uname -a |grep WSL >/dev/null
 if [ $? -eq 0 ]; then
   iswindows=1
   windir=`wslvar USERPROFILE`
   lindir=`wslpath "$(wslvar USERPROFILE)"`
-  winuser=`cmd.exe /C whoami 2>/dev/null | tr -d $'\r' | cut -f2 -d\\`
 fi
 
 groups |grep scanner >/dev/null
@@ -96,21 +92,20 @@ action=
 while ! echo $action |grep '^[ufse]$' >/dev/null; do
   echo
   if [ $user = "jburnett" ]; then
-    echo -n "(U)pload scan or (E)xisting, (F)ax, or (S)ave?  [default: u] "
+	  echo -n "Upload (N)ew scan or (L)ast viewed PDF or (S)ave scan as PDF?  [default: n] "
   else
-    echo -n "(U)pload scan or (E)xisting, (F)ax, or (S)ave?  [default: s] "
+	  echo -n "Upload (N)ew scan or (L)ast viewed PDF or (S)ave scan as PDF?  [default: s] "
   fi
   read action
   if [ $user = "jburnett" ]; then
-    test -z "$action" && action=u
+    test -z "$action" && action=n
   else
     test -z "$action" && action=s
   fi
   action=`echo $action |tr '[A-Z]' '[a-z]'`
 done
-echo $action |grep ^u >/dev/null && action=upload
-echo $action |grep ^e >/dev/null && action=existing
-echo $action |grep ^f >/dev/null && action=fax
+echo $action |grep ^n >/dev/null && action=upload
+echo $action |grep ^l >/dev/null && action=existing
 echo $action |grep ^s >/dev/null && action=save
 
 if [ $action = "upload" -o $action = "existing" ]; then
@@ -159,17 +154,9 @@ if [ $action = "upload" -o $action = "existing" ]; then
       echo
       if [ -f "$uploadhist/pod.$id" -a ! -f "$uploadhist/log.$id" ]; then
         tpdef=l
-        if [ $user = "jburnett" ]; then
-          echo -n "Is this a (P)OD, (L)og or (C)ontract? [default: p] "
-        else
-          echo -n "Is this a (P)OD, (L)og or (C)ontract? [default: c] "
-        fi
+        echo -n "Is this a (P)OD, (L)og or (C)ontract? [default: p] "
       else
-        if [ $user = "jburnett" ]; then
-          echo -n "Is this a (P)OD, (L)og or (C)ontract? [default: p] "
-        else
-          echo -n "Is this a (P)OD, (L)og or (C)ontract? [default: c] "
-        fi
+        echo -n "Is this a (P)OD, (L)og or (C)ontract? [default: p] "
       fi
       read tp
       test -z "$tp" && tp=$tpdef
@@ -207,93 +194,6 @@ if [ $action = "upload" -o $action = "existing" ]; then
 
   echo
   echo "!!! You're about to upload this scan to '$description' for $type $id !!!"
-fi
-
-if [ $action = "fax" ]; then
-  go=1
-  while [ $go -eq 1 ]; do
-    faxnum=
-    while ! echo "$faxnum" |grep '^[1-9][0-9][0-9]-[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]$' >/dev/null; do
-      echo
-      echo -n "Fax# (xxx-xxx-xxxx) or enter for previous entries: "
-      read faxnum
-      test -z "$faxnum" && faxnum=999-999-9999
-    done
-    if [ $faxnum = "999-999-9999" ]; then
-      if [ ! -f $faxhist ]; then
-        echo "Absolute Rush|zzz|615-301-6531" > $faxhist
-      fi
-      echo
-      n=1
-      while read line; do
-        company=`echo $line |cut -f1 -d\| |sed -e 's/zzz//'`
-        attention=`echo $line |cut -f2 -d\| |sed -e 's/zzz//'`
-        faxnum=`echo $line |cut -f3 -d\|`
-        eval choice_$n=\$line
-        echo "[$n] $company $attention $faxnum" |sed -e 's/\ \ */ /g'
-        n=`expr $n + 1`
-      done < $faxhist
-      echo
-      f=0
-      while [ $f -lt 1 -o $f -ge $n ]; do
-        echo -n "Enter number of fax history entry: "
-        read f
-      done
-      eval choice=\$choice_$f
-      company=`echo $choice |cut -f1 -d\| |sed -e 's/zzz//'`
-      attention=`echo $choice |cut -f2 -d\| |sed -e 's/zzz//'`
-      faxnum=`echo $choice |cut -f3 -d\|`
-    else
-      company=
-      echo -n "Company: "
-      read company
-
-      attention=
-      echo -n "Attention: "
-      read attention
-    fi
-
-    conf="Fax to"
-    test ! -z "$company" && conf="$conf $company"
-    test ! -z "$attention" && conf="$conf $attention"
-    conf="$conf $faxnum"
-
-    echo -n "$conf.  Correct? [default: y] "
-    read ans
-    test -z "$ans" && ans=y
-    echo $ans |grep -i ^y >/dev/null && go=0
-  done
-
-  test -z "$choice" && echo "$company|$attention|$faxnum" |sed -e 's/^|/zzz|/' -e 's/||/|zzz|/' >> $faxhist
-  sort $faxhist | uniq > $faxhist.new
-  mv $faxhist.new $faxhist
-
-  if [ $user = "bparsley" ]; then
-    from="Bill Parsley"
-  fi
-  if [ $user = "jburnett" ]; then
-    from="Jason Burnett"
-  fi
-  if [ $user = "jventers" ]; then
-    from="John Venters"
-  fi
-  if [ $user = "lochoa" ]; then
-    from="Lindsey Ochoa"
-  fi
-  faxnum=`echo $faxnum |sed -e 's/-//g'`
-  faxnum=1$faxnum
-  if [ ! -z "$company" -a ! -z "$attention" ]; then
-    to="$attention @ $company"
-  else
-    to="$attention $company"
-  fi
-  echo "From: Absolute Rush Delivery <$user@absoluterush.net>" > /tmp/fax.$$
-  # echo "To: $to <$faxnum@maxemailsend.com>" >> /tmp/fax.$$
-  echo "To: $to <$faxnum@efaxsend.com>" >> /tmp/fax.$$
-  echo "Subject: {fine}" >> /tmp/fax.$$
-  echo " " >> /tmp/fax.$$
-  echo "Sent by $from (615-252-3774)" >> /tmp/fax.$$
-  echo >> /tmp/fax.$$
 fi
 
 quick=
@@ -445,10 +345,6 @@ if [ $iswindows -eq 1 ]; then
   viewer="/mnt/c/Program Files/Adobe/Acrobat DC/Acrobat/Acrobat.exe"
 fi
 
-if [ $action = "fax" ]; then
-  #fax it
-  mail -a $file -t < /tmp/fax.$$ && echo "Fax successfully sent."
-fi
 fname=`basename $file`
 echo
 
@@ -458,11 +354,12 @@ if [ $iswindows -eq 1 ]; then
   echo "Your scan is saved as $fname in your Downloads folder."
   # copy this file to our Windows downloads directory
   cp -f "$fname" $lindir/Downloads/
+  nohup "$viewer" "$windir/Downloads/$fname" 2>/dev/null &
 else
   echo "Your scan is saved as $fname in your scans folder."
 fi
 
-nohup "$viewer" "$windir/Downloads/$fname" 2>/dev/null &
+#nohup "$viewer" "$windir/Downloads/$fname" 2>/dev/null &
 fi
 
 echo
