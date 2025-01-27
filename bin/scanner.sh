@@ -37,7 +37,8 @@ winuser=""
 uname -a |grep WSL >/dev/null
 if [ $? -eq 0 ]; then
   iswindows=1
-  windir=`wslpath "$(wslvar USERPROFILE)"`
+  windir=`wslvar USERPROFILE`
+  lindir=`wslpath "$(wslvar USERPROFILE)"`
   winuser=`cmd.exe /C whoami 2>/dev/null | tr -d $'\r' | cut -f2 -d\\`
 fi
 
@@ -335,8 +336,7 @@ else
   if [ $action = "existing" ]; then
     latestpdf="/tmp/_current.pdf"
     if [ $iswindows -eq 1 ]; then
-#      latestpdf=`ls -Art /mnt/c/Users/${winuser}/Downloads/*.pdf |tail -1`
-      latestpdf=`ls -Art $windir/Downloads/*.pdf |tail -1`
+      latestpdf=`ls -Art $lindir/Downloads/*.pdf |tail -1`
     fi
     while [ -z "$fname" -o ! -f "$fname" ]; do
       echo -n "What file would you like to upload? [$latestpdf]"
@@ -442,7 +442,7 @@ else
 fi
 
 if [ $iswindows -eq 1 ]; then
-  viewer="/mnt/c/Program Files (x86)/Adobe/Acrobat Reader DC/Reader/AcroRd32.exe"
+  viewer="/mnt/c/Program Files/Adobe/Acrobat DC/Acrobat/Acrobat.exe"
 fi
 
 if [ $action = "fax" ]; then
@@ -457,13 +457,12 @@ cd /tmp
 if [ $iswindows -eq 1 ]; then
   echo "Your scan is saved as $fname in your Downloads folder."
   # copy this file to our Windows downloads directory
-#  cp -f "$fname" /mnt/c/Users/$winuser/Downloads/
-  cp -f "$fname" $windir/Downloads/
+  cp -f "$fname" $lindir/Downloads/
 else
   echo "Your scan is saved as $fname in your scans folder."
 fi
 
-nohup "$viewer" "$fname" 2>/dev/null &
+nohup "$viewer" "$windir/Downloads/$fname" 2>/dev/null &
 fi
 
 echo
