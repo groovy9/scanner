@@ -89,7 +89,7 @@ echo "Press control-c at any time to start over."
 echo "Press enter to accept default answers to questions."
 
 action=
-while ! echo $action |grep '^[ufse]$' >/dev/null; do
+while ! echo $action |grep '^[nls]$' >/dev/null; do
   echo
   if [ $user = "jburnett" ]; then
 	  echo -n "Upload (N)ew scan or (L)ast viewed PDF or (S)ave scan as PDF?  [default: n] "
