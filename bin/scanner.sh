@@ -145,10 +145,7 @@ if [ $action = "upload" -o $action = "existing" ]; then
 
   if [ $type = "runs" ]; then
     tp=
-    tpdef=c
-    if [ $user = "jburnett" ]; then
-      tpdef=p
-    fi
+    tpdef=p
 
     while ! echo $tp |grep '^[plc]$' >/dev/null; do
       echo
