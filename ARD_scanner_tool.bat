@@ -7,13 +7,13 @@ Dear future IT guy,
 This is the Absolute Rush Delivery scanner intall/launch tool.  ARD uses a scanning tool that was originally 
 written for the Linux terminal.  It's an old-looking text based menu interface but requires very few key 
 strokes and integrates with the ARD web application so that it knows what the user is looking at, scans 
-what's on the scanner into a highly compressed PDF, and uploads it to ARD attached to whatever the user 
-is looking at.  Usually, you just put paper in the feeder and press enter a few times and it does
-the rest.
+what's on the scanner into a highly compressed PDF, uploads it to ARD attached to whatever the user 
+is looking at, saves it in the Windows Documents folder and opens in it your PDF reader.  Usually, you just 
+put paper in the feeder and press enter a few times and it does the rest.
 
 It runs on MS Windows via the Windows subsystem for Linux.  This script takes care of installing 
 everything it needs the first time you run it and from then on, it just launches the scanner tool
-inside the Linux virtual machine.
+inside the Linux virtual machine.  There should be no prerequisites to install first.
 
 Save this script to a user's Documents directory, then right-click it, choose new -> shortcut,
 name it "ARD Scanner Tool" and choose the file you just saved to Documents. Now double-click it to run it.
