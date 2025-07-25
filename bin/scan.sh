@@ -19,7 +19,7 @@ cleanup() {
   rm -rf $tmp
 }
 
-$bindir/wsl_attach_scanner.sh
+# $bindir/wsl_attach_scanner.sh
 
 type=`cat ~/.scannertype`
 if [ -z "$type" ]; then
