@@ -99,28 +99,29 @@ rem next line is needed so the wsl | findstr thing works below
 set WSL_UTF8=1
 wsl --list |findstr %linuxname% >nul
 if ERRORLEVEL 1 (
+	:USERNAME
+	echo.
+	set /p user=What is your username in the ARD web app?  
+	if "%user%" == "" ( goto USERNAME )
+
 	echo.
 	echo After you press enter, I'll install the Linux environment for the scanner tools to
-	echo run inside.  Some text will pass by and when it prompts for you for a username, use the same
-	echo username you log into ARD with. 
-	echo.
-	echo It will also ask for a password.  You won't need it so just press x twice.
-	echo.
-	echo When you see some colored text and a flashing cursor, type the word exit and press enter.  
-
-	echo Ready?  Press enter now.
+	echo run inside.  Lots of text will stream by for a few minutes. Just wait.
 	echo.
 	pause
-	wsl --install -d Ubuntu-24.04 --name %linuxname%
+
+	wsl --install -n -d Ubuntu-24.04 --name %linuxname%
 	if ERRORLEVEL 1 (
 		echo Failed to install Linux.  See Jason.
 		pause
 		goto TOP
 	)
+	rem wsl -d %linuxname% --user root ls /home ^| wc -l |findstr 1
+
+	wsl -d %linuxname% --user root useradd -m %user% -s /usr/bin/bash
+	wsl --manage %linuxname% --set-default-user %user%
 ) 
 set WSL_UTF8=0 :: set this back to default or errors get thrown later
-
-rem now see if the scanner tools bundle has been installed inside Linux
 
 rem load a kernel module needed by usbipd below
 wsl -d %linuxname% --user root modprobe vhci-hcd
@@ -135,6 +136,8 @@ if ERRORLEVEL 1 (
 rem make it so scanner starts when we log in
 wsl -d %linuxname% grep scanner ~/.bashrc ^>/dev/null ^|^| echo ~/bin/scanner ^>^> ~/.bashrc
 
+rem now see if the scanner tools bundle has been installed inside Linux
+
 :SOFTWAREINSTALL
 wsl -d %linuxname% ls ~/bin/scanner 2^>/dev/null| findstr scanner >nul
 if ERRORLEVEL 1 (
@@ -143,12 +146,6 @@ if ERRORLEVEL 1 (
 
 	rem what's our home directory?
 	for /f %%i in ('wsl -d %linuxname% echo $HOME') do ( set home="%%i" )
-	
-	echo.
-	echo Press enter to install scanner software bundle onto the new Linux environment.  
-	echo A bunch of text will stream by for a few minutes.  Just wait.
-	echo.
-	pause
 	
 	rem in the 'apt -y install' line below, the packages from pdftk to wslu are those required
 	rem for the scanner software to work.  The next two lines from build-essential to libffi-dev
