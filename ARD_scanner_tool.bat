@@ -16,14 +16,18 @@ everything it needs the first time you run it and from then on, it just launches
 inside the Linux virtual machine.  There should be no prerequisites to install first.
 
 Save this script to a user's Documents directory, then right-click it, choose new -> shortcut,
-name it "ARD Scanner Tool" and choose the file you just saved to Documents. Now double-click it to run it.
+and a new shortcut file will be created in the same directory.  Right-click the new shortcut and
+rename it to "ARD scanner tool". Move the shortcut (not this bat file) to the Desktop or toolbar 
+and double-click it to run it.
 
 It depends on a tool which is automatically installed by this script called usbipd 
 found here: https://github.com/dorssel/usbipd-win ...  It's responsible for passing the scanner USB device 
 through to the Linux environment.
 
-For problems with the scanning script itself, see ~/scanner/bin/scanner.sh inside the Linux install.
-scanner.sh depends on several other scripts found in the same directory.
+For problems or with or changes to the scanning script itself, see ~/scanner/bin/scanner.sh inside 
+the Linux install.  They're all plain old Linux shell scripts. 
+
+scanner.sh is the main menu program and depends on several other scripts found in the same directory.
 
 :ENDCOMMENT
 
@@ -58,7 +62,6 @@ if ERRORLEVEL 1 (
 		echo.
 		pause
 	)
-
 	
 	msiexec /i "%tmp%\usbipd.msi" /passive
 	if ERRORLEVEL 1 (
