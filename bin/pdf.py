@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+#!/usr/local/bin/python2
 # Copyright 2006 Google Inc.
 # Author: agl@imperialviolet.org (Adam Langley)
 #
