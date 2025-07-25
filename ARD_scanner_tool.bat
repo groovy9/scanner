@@ -1,4 +1,32 @@
 @echo off
+
+goto ENDCOMMENT
+
+Dear future IT guy,
+
+This is the Absolute Rush Delivery scanner intall/launch tool.  ARD uses a scanning tool that was originally 
+written for the Linux terminal.  It's an old-looking text based menu interface but requires very few key 
+strokes and integrates with the ARD web application so that it knows what the user is looking at, scans 
+what's on the scanner into a highly compressed PDF, and uploads it to ARD attached to whatever the user 
+is looking at.  Usually, you just put paper in the feeder and press enter a few times and it does
+the rest.
+
+It runs on MS Windows via the Windows subsystem for Linux.  This script takes care of installing 
+everything it needs the first time you run it and from then on, it just launches the scanner tool
+inside the Linux virtual machine.
+
+Save this script to a user's Documents directory, then right-click it, choose new -> shortcut,
+name it "ARD Scanner Tool" and choose the file you just saved to Documents. Now double-click it to run it.
+
+It depends on a tool which is automatically installed by this script called usbipd 
+found here: https://github.com/dorssel/usbipd-win ...  It's responsible for passing the scanner USB device 
+through to the Linux environment.
+
+For problems with the scanning script itself, see ~/scanner/bin/scanner.sh inside the Linux install.
+scanner.sh depends on several other scripts found in the same directory.
+
+:ENDCOMMENT
+
 echo.
 echo This may take a few seconds...
 echo.
