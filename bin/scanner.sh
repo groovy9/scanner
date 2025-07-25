@@ -339,7 +339,7 @@ else
 fi
 
 if [ $iswindows -eq 1 ]; then
-  viewer="/mnt/c/Program Files/Adobe/Acrobat DC/Acrobat/Acrobat.exe"
+  viewer=wslview
 fi
 
 fname=`basename $file`
@@ -356,7 +356,7 @@ else
   echo "Your scan is saved as $fname in your scans folder."
 fi
 
-#nohup "$viewer" "$windir/Downloads/$fname" 2>/dev/null &
+nohup "$viewer" "$windir/Downloads/$fname" 2>/dev/null &
 fi
 
 echo
